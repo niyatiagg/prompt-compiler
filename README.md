@@ -1,87 +1,81 @@
 # PromptOps — Declarative Prompt Compiler
 
-A YAML-driven prompt compiler that turns declarative task specifications into LLM prompts and runs them against a local Ollama model.
+A declarative prompt compilation system that converts YAML task specifications into structured LLM prompts and executes them against a local language model.
+
+## Overview
+
+PromptOps separates task intent from prompt authoring. Users define requirements in YAML; the compiler generates the prompt and returns the model response.
 
 ```
-YAML spec  →  parse  →  compile prompt  →  Ollama  →  response
+YAML specification → Schema parsing → Prompt compilation → LLM inference → Response
 ```
 
 ## Tech Stack
 
-Python, PyYAML, python-dotenv, OpenAI SDK (Ollama-compatible API), Ollama
-
-## Project Structure
-
-```
-prompt-compiler/
-├── main.py           # CLI entry point — parse YAML, compile, call LLM
-├── prompts.py        # Prompt compiler — task registry and templates
-├── sample.yaml       # Example: summarize task
-├── .env              # Ollama config (not committed)
-└── venv/             # Python virtual environment
-```
+- **Python** — application runtime
+- **PyYAML** — YAML parsing
+- **Pydantic-compatible OpenAI SDK** — LLM client
+- **Ollama** — local model inference
+- **python-dotenv** — environment configuration
 
 ## Prerequisites
 
-- Python 3.10+
-- [Ollama](https://ollama.com) installed and running
+- Python 3.10 or later
+- [Ollama](https://ollama.com) installed and running locally
 
-## Setup
+## Installation
+
+1. Clone the repository:
 
 ```bash
+git clone <repository-url>
 cd prompt-compiler
+```
+
+2. Create and activate a virtual environment:
+
+```bash
 python3 -m venv venv
 source venv/bin/activate
+```
+
+3. Install dependencies:
+
+```bash
 pip install openai pyyaml python-dotenv
 ```
 
-Install and start Ollama, then pull a model:
+4. Install Ollama and download a model:
 
 ```bash
 curl -fsSL https://ollama.com/install.sh | sh
 ollama pull llama3.2:1b
 ```
 
-Create `.env`:
+## Configuration
 
-```
+Create a `.env` file in the project root:
+
+```env
 OLLAMA_BASE_URL=http://localhost:11434/v1
 OLLAMA_MODEL=llama3.2:1b
 ```
 
-### Ollama on CPU (GPU driver issues)
-
-If you see `CUDA error: device kernel image is invalid`, force CPU mode:
-
-```bash
-sudo mkdir -p /etc/systemd/system/ollama.service.d
-sudo tee /etc/systemd/system/ollama.service.d/override.conf << 'EOF'
-[Service]
-Environment="CUDA_VISIBLE_DEVICES="
-Environment="OLLAMA_LLM_LIBRARY=cpu_avx2"
-EOF
-sudo systemctl daemon-reload
-sudo systemctl restart ollama
-```
-
-CPU inference is slower (~5–10s per request) but works fine for development.
-
 ## Usage
+
+1. Define a task specification in a YAML file (see `sample.yaml`).
+2. Run the compiler:
 
 ```bash
 source venv/bin/activate
 python main.py
 ```
 
-By default this reads `sample.yaml`. Expected output:
+The program prints the parsed specification, compiled prompt, and model response.
 
-1. Parsed YAML dict
-2. Compiled prompt string
-3. LLM response
+## Input Specification
 
-## Example YAML
-
-### Summarize
+Example task definition:
 
 ```yaml
 task: summarize
@@ -95,26 +89,26 @@ text: |
   It automates deployment, scaling, and management of containerized applications.
 ```
 
-## How It Works
+## Project Structure
 
-1. **Parse** — `yaml.safe_load()` reads the YAML file into a Python dict.
-2. **Compile** — `generate_prompt()` in `prompts.py` maps `task` to a prompt template.
-3. **Execute** — `main.py` sends the compiled prompt to Ollama via the OpenAI-compatible API.
-4. **Respond** — The model output is printed to the terminal.
+| File | Description |
+|------|-------------|
+| `main.py` | Entry point: parses YAML, invokes the compiler, calls the LLM |
+| `prompts.py` | Prompt compiler: maps task types to prompt templates |
+| `sample.yaml` | Example task specification |
+| `.env` | Local configuration (not committed) |
 
-## Roadmap
+## Architecture
 
-| Stage | Status | Description |
-|-------|--------|-------------|
-| 1 | Done | YAML → prompt → Ollama |
-| 2 | Planned | Multiple tasks (`code_review`, `interview_question`) |
-| 3 | Planned | FastAPI REST API |
-| 4 | Planned | Pydantic schema validation |
-| 5 | Planned | Jinja2 prompt templates |
-| 6 | Planned | Prompt compression + token/quality metrics |
+1. **Parse** — Load the YAML specification into a structured dictionary.
+2. **Compile** — Select the task handler and generate the final prompt.
+3. **Execute** — Send the prompt to Ollama via its OpenAI-compatible API.
+4. **Output** — Return the generated response.
 
-## Resume
+## Supported Tasks
 
-**Title:** PromptOps — Declarative Prompt Compiler
+| Task | Description |
+|------|-------------|
+| `summarize` | Summarize input text for a given audience and tone |
 
-**Bullet:** Built a YAML-driven prompt compiler that validates task specs, generates templated LLM prompts, and returns structured responses via a FastAPI service.
+Additional task types (code review, interview questions, structured JSON output) are planned as part of the workflow engine expansion.
