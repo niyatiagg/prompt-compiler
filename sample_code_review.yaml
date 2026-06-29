@@ -1,0 +1,16 @@
+task: code_review
+
+language: python
+
+goals:
+  - find bugs
+  - detect security issues
+  - suggest improvements
+
+code: |
+  def divide(a, b):
+      return a / b
+
+  password = "admin123"
+  user_input = input("Enter query: ")
+  query = f"SELECT * FROM users WHERE name = '{user_input}'"

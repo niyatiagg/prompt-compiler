@@ -1,0 +1,15 @@
+task: interview_question
+
+domain: distributed systems
+
+difficulty: junior
+
+requirements:
+  - ask one question at a time
+  - include follow-up questions
+  - provide evaluation rubric
+
+focus:
+  - scalability
+  - consistency
+  - fault tolerance
